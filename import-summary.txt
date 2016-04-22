@@ -1,0 +1,116 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* .gitignore
+* Android.mk
+* CleanSpec.mk
+* README
+* build\
+* build\generated\
+* build\generated\source\
+* build\generated\source\buildConfig\
+* build\generated\source\buildConfig\release\
+* build\generated\source\buildConfig\release\com\
+* build\generated\source\buildConfig\release\com\android\
+* build\generated\source\buildConfig\release\com\android\calendarcommon2\
+* build\generated\source\buildConfig\release\com\android\calendarcommon2\BuildConfig.java
+* build\intermediates\
+* build\intermediates\bundles\
+* build\intermediates\bundles\release\
+* build\intermediates\bundles\release\AndroidManifest.xml
+* build\intermediates\bundles\release\aapt\
+* build\intermediates\bundles\release\aapt\AndroidManifest.xml
+* build\intermediates\bundles\release\classes.jar
+* build\intermediates\classes\
+* build\intermediates\classes\release\
+* build\intermediates\classes\release\com\
+* build\intermediates\classes\release\com\android\
+* build\intermediates\classes\release\com\android\calendarcommon2\
+* build\intermediates\classes\release\com\android\calendarcommon2\BuildConfig.class
+* build\intermediates\classes\release\com\android\calendarcommon2\DateException.class
+* build\intermediates\classes\release\com\android\calendarcommon2\Duration.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$1.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$InvalidFormatException.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByDay.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByHour.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByMinute.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByMonth.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByMonthDay.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseBySecond.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseBySetPos.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByWeekNo.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseByYearDay.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseCount.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseFreq.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseInterval.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseUntil.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$ParseWkst.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence$PartParser.class
+* build\intermediates\classes\release\com\android\calendarcommon2\EventRecurrence.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$1.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$Component.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$FormatException.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$Parameter.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$ParserState.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar$Property.class
+* build\intermediates\classes\release\com\android\calendarcommon2\ICalendar.class
+* build\intermediates\classes\release\com\android\calendarcommon2\RecurrenceProcessor$DaySet.class
+* build\intermediates\classes\release\com\android\calendarcommon2\RecurrenceProcessor.class
+* build\intermediates\classes\release\com\android\calendarcommon2\RecurrenceSet.class
+* build\intermediates\incremental\
+* build\intermediates\incremental\aidl\
+* build\intermediates\incremental\aidl\release\
+* build\intermediates\incremental\aidl\release\dependency.store
+* build\intermediates\incremental\mergeAssets\
+* build\intermediates\incremental\mergeAssets\release\
+* build\intermediates\incremental\mergeAssets\release\merger.xml
+* build\intermediates\incremental\packageResourcesrelease\
+* build\intermediates\incremental\packageResourcesrelease\merger.xml
+* build\outputs\
+* build\outputs\aar\
+* build\outputs\aar\calendar-release.aar
+* build\tmp\
+* build\tmp\packageReleaseJar\
+* build\tmp\packageReleaseJar\MANIFEST.MF
+* calendar.iml
+* tests\
+* tests\Android.mk
+* tests\AndroidManifest.xml
+* tests\src\
+* tests\src\com\
+* tests\src\com\android\
+* tests\src\com\android\calendarcommon2\
+* tests\src\com\android\calendarcommon2\DurationTest.java
+* tests\src\com\android\calendarcommon2\EventRecurrenceTest.java
+* tests\src\com\android\calendarcommon2\RRuleTest.java
+* tests\src\com\android\calendarcommon2\RecurrenceProcessorTest.java
+* tests\src\com\android\calendarcommon2\RecurrenceSetTest.java
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => calendarCommon\src\main\AndroidManifest.xml
+* src\ => calendarCommon\src\main\java\
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

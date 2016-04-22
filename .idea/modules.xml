@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/MyCalendar - Copy.iml" filepath="$PROJECT_DIR$/MyCalendar - Copy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/calendarCommon/calendarCommon.iml" filepath="$PROJECT_DIR$/calendarCommon/calendarCommon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/chips/chips.iml" filepath="$PROJECT_DIR$/chips/chips.iml" />
+      <module fileurl="file://$PROJECT_DIR$/colorpicker/colorpicker.iml" filepath="$PROJECT_DIR$/colorpicker/colorpicker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datetimepicker/datetimepicker.iml" filepath="$PROJECT_DIR$/datetimepicker/datetimepicker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/timezonepicker/timezonepicker.iml" filepath="$PROJECT_DIR$/timezonepicker/timezonepicker.iml" />
+    </modules>
+  </component>
+</project>
