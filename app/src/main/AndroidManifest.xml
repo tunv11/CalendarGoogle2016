@@ -39,7 +39,23 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail" />
+    <!-- Used for runtime permissions related to user's calendar. -->
+    <permission-group android:name="android.permission-group.CALENDAR"
+         />
 
+    <!-- Allows an application to read the user's calendar data.
+         <p>Protection level: dangerous
+    -->
+    <permission android:name="android.permission.READ_CALENDAR"
+        android:permissionGroup="android.permission-group.CALENDAR"
+         />
+
+    <!-- Allows an application to write the user's calendar data.
+         <p>Protection level: dangerous
+    -->
+    <permission android:name="android.permission.WRITE_CALENDAR"
+        android:permissionGroup="android.permission-group.CALENDAR"
+       />
     <!--<uses-sdk-->
         <!--android:minSdkVersion="15"-->
         <!--android:targetSdkVersion="18"></uses-sdk>-->

@@ -16,6 +16,7 @@
 
 package com.briswell.mycalendar;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -26,6 +27,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -41,6 +43,7 @@ import android.os.Handler;
 import android.provider.CalendarContract.Attendees;
 import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
+import android.support.v4.app.ActivityCompat;
 import android.text.Layout.Alignment;
 import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
@@ -697,7 +700,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         return event;
     }
 
-    private static int getEventAccessLevel(Context context, Event e) {
+    private  int getEventAccessLevel(Context context, Event e) {
         ContentResolver cr = context.getContentResolver();
 
         int accessLevel = Calendars.CAL_ACCESS_NONE;

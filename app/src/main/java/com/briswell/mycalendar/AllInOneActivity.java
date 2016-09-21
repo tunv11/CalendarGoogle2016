@@ -16,6 +16,7 @@
 
 package com.briswell.mycalendar;
 
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
@@ -34,6 +35,7 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -46,8 +48,10 @@ import android.provider.CalendarContract;
 import android.provider.CalendarContract.Attendees;
 import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -89,7 +93,9 @@ import static android.provider.CalendarContract.EXTRA_EVENT_END_TIME;
 
 @SuppressWarnings("ALL")
 public class AllInOneActivity extends AbstractCalendarActivity implements EventHandler,
-        OnSharedPreferenceChangeListener, SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, NavigationView.OnNavigationItemSelectedListener {
+        OnSharedPreferenceChangeListener, SearchView.OnQueryTextListener,
+        SearchView.OnSuggestionListener, NavigationView.OnNavigationItemSelectedListener
+        , ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String TAG = "AllInOneActivity";
     private static final boolean DEBUG = true;
     private static final String EVENT_INFO_FRAGMENT_TAG = "EventInfoFragment";
@@ -218,6 +224,12 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
     private LinearLayout.LayoutParams mVerticalControlsParams;
     private AllInOneMenuExtensionsInterface mExtensions = ExtensionsFactory
             .getAllInOneMenuExtensions();
+    private static final int PERMISSION_REQUEST_CALENDAR = 999;
+
+    // Get time from intent or icicle
+    long timeMillis = -1;
+    int viewType = -1;
+    Bundle mIcicle;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -246,6 +258,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
             setTheme(R.style.CalendarTheme_WithActionBarWallpaper);
         }
         super.onCreate(icicle);
+        mIcicle = icicle;
 
         if (icicle != null && icicle.containsKey(BUNDLE_KEY_CHECK_ACCOUNTS)) {
             mCheckForAccounts = icicle.getBoolean(BUNDLE_KEY_CHECK_ACCOUNTS);
@@ -265,9 +278,6 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         mController = CalendarController.getInstance(this);
 
 
-        // Get time from intent or icicle
-        long timeMillis = -1;
-        int viewType = -1;
         final Intent intent = getIntent();
         if (icicle != null) {
             timeMillis = icicle.getLong(BUNDLE_KEY_RESTORE_TIME);
@@ -370,13 +380,20 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         // the rest of the handlers the controller dispatches to are.
         mController.registerFirstEventHandler(HANDLER_KEY, this);
 
-        initFragments(timeMillis, viewType, icicle);
 
         // Listen for changes that would require this to be refreshed
         SharedPreferences prefs = GeneralPreferences.getSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         mContentResolver = getContentResolver();
+
+        //check permission
+        if (checkPermission()) {
+            initFragments(timeMillis, viewType, icicle);
+
+        }
+
+
     }
 
     private void setupToolbar(int viewType) {
@@ -553,7 +570,6 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         mCalIntentReceiver = Utils.setTimeChangesReceiver(this, mTimeChangesUpdater);
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -630,7 +646,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         }
         if (!mShowCalendarControls || viewType == ViewType.EDIT) {
             mMiniMonth.setVisibility(View.GONE);
-                mCalendarsList.setVisibility(View.GONE);
+            mCalendarsList.setVisibility(View.GONE);
         }
 
         EventInfo info = null;
@@ -749,101 +765,105 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Time t = null;
-        int viewType = ViewType.CURRENT;
-        long extras = CalendarController.EXTRA_GOTO_TIME;
-        final int itemId = item.getItemId();
-        if (itemId == R.id.action_refresh) {
-            mController.refreshCalendars();
-            return true;
-        } else if (itemId == R.id.action_today) {
-            viewType = ViewType.CURRENT;
-            t = new Time(mTimeZone);
-            t.setToNow();
-            extras |= CalendarController.EXTRA_GOTO_TODAY;
-        } else if (itemId == R.id.action_goto) {
-            Time todayTime;
-            t = new Time(mTimeZone);
-            t.set(mController.getTime());
-            todayTime = new Time(mTimeZone);
-            todayTime.setToNow();
-            if (todayTime.month == t.month) {
-                t = todayTime;
-            }
-
-            DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePickerDialog dialog, int year, int monthOfYear, int dayOfMonth) {
-                    Time selectedTime = new Time(mTimeZone);
-                    selectedTime.year = year;
-                    selectedTime.month = monthOfYear;
-                    selectedTime.monthDay = dayOfMonth;
-                    long extras = CalendarController.EXTRA_GOTO_TIME | CalendarController.EXTRA_GOTO_DATE;
-                    mController.sendEvent(this, EventType.GO_TO, selectedTime, null, selectedTime, -1, ViewType.CURRENT, extras, null, null);
+        if (checkPermission()) {
+            Time t = null;
+            int viewType = ViewType.CURRENT;
+            long extras = CalendarController.EXTRA_GOTO_TIME;
+            final int itemId = item.getItemId();
+            if (itemId == R.id.action_refresh) {
+                mController.refreshCalendars();
+                return true;
+            } else if (itemId == R.id.action_today) {
+                viewType = ViewType.CURRENT;
+                t = new Time(mTimeZone);
+                t.setToNow();
+                extras |= CalendarController.EXTRA_GOTO_TODAY;
+            } else if (itemId == R.id.action_goto) {
+                Time todayTime;
+                t = new Time(mTimeZone);
+                t.set(mController.getTime());
+                todayTime = new Time(mTimeZone);
+                todayTime.setToNow();
+                if (todayTime.month == t.month) {
+                    t = todayTime;
                 }
-            }, t.year, t.month, t.monthDay);
-            datePickerDialog.show(getFragmentManager(), "datePickerDialog");
 
-        } else if (itemId == R.id.action_hide_controls) {
-            mHideControls = !mHideControls;
-            Utils.setSharedPreference(
-                    this, GeneralPreferences.KEY_SHOW_CONTROLS, !mHideControls);
-            item.setTitle(mHideControls ? mShowString : mHideString);
-            if (!mHideControls) {
-                mMiniMonth.setVisibility(View.VISIBLE);
-                mCalendarsList.setVisibility(View.VISIBLE);
-                mMiniMonthContainer.setVisibility(View.VISIBLE);
+                DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePickerDialog dialog, int year, int monthOfYear, int dayOfMonth) {
+                        Time selectedTime = new Time(mTimeZone);
+                        selectedTime.year = year;
+                        selectedTime.month = monthOfYear;
+                        selectedTime.monthDay = dayOfMonth;
+                        long extras = CalendarController.EXTRA_GOTO_TIME | CalendarController.EXTRA_GOTO_DATE;
+                        mController.sendEvent(this, EventType.GO_TO, selectedTime, null, selectedTime, -1, ViewType.CURRENT, extras, null, null);
+                    }
+                }, t.year, t.month, t.monthDay);
+                datePickerDialog.show(getFragmentManager(), "datePickerDialog");
+
+            } else if (itemId == R.id.action_hide_controls) {
+                mHideControls = !mHideControls;
+                Utils.setSharedPreference(
+                        this, GeneralPreferences.KEY_SHOW_CONTROLS, !mHideControls);
+                item.setTitle(mHideControls ? mShowString : mHideString);
+                if (!mHideControls) {
+                    mMiniMonth.setVisibility(View.VISIBLE);
+                    mCalendarsList.setVisibility(View.VISIBLE);
+                    mMiniMonthContainer.setVisibility(View.VISIBLE);
+                }
+                final ObjectAnimator slideAnimation = ObjectAnimator.ofInt(this, "controlsOffset",
+                        mHideControls ? 0 : mControlsAnimateWidth,
+                        mHideControls ? mControlsAnimateWidth : 0);
+                slideAnimation.setDuration(mCalendarControlsAnimationTime);
+                ObjectAnimator.setFrameDelay(0);
+                slideAnimation.start();
+                return true;
+            } else if (itemId == R.id.action_search) {
+                return false;
+            } else {
+                return mExtensions.handleItemSelected(item, this);
             }
-            final ObjectAnimator slideAnimation = ObjectAnimator.ofInt(this, "controlsOffset",
-                    mHideControls ? 0 : mControlsAnimateWidth,
-                    mHideControls ? mControlsAnimateWidth : 0);
-            slideAnimation.setDuration(mCalendarControlsAnimationTime);
-            ObjectAnimator.setFrameDelay(0);
-            slideAnimation.start();
-            return true;
-        } else if (itemId == R.id.action_search) {
-            return false;
-        } else {
-            return mExtensions.handleItemSelected(item, this);
+            mController.sendEvent(this, EventType.GO_TO, t, null, t, -1, viewType, extras, null, null);
         }
-        mController.sendEvent(this, EventType.GO_TO, t, null, t, -1, viewType, extras, null, null);
         return true;
     }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         final int itemId = item.getItemId();
-        switch (itemId) {
-            case R.id.day_menu_item:
-                if (mCurrentView != ViewType.DAY) {
-                    mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.DAY);
-                }
-                break;
-            case R.id.week_menu_item:
-                if (mCurrentView != ViewType.WEEK) {
-                    mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.WEEK);
-                }
-                break;
-            case R.id.month_menu_item:
-                if (mCurrentView != ViewType.MONTH) {
-                    mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.MONTH);
-                }
-                break;
-            case R.id.agenda_menu_item:
-                if (mCurrentView != ViewType.AGENDA) {
-                    mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.AGENDA);
-                }
-                break;
-            case R.id.action_select_visible_calendars:
-                mController.sendEvent(this, EventType.LAUNCH_SELECT_VISIBLE_CALENDARS, null, null,
-                        0, 0);
-                break;
-            case R.id.action_settings:
-                mController.sendEvent(this, EventType.LAUNCH_SETTINGS, null, null, 0, 0);
-                break;
+        if (checkPermission()) {
+            switch (itemId) {
+                case R.id.day_menu_item:
+                    if (mCurrentView != ViewType.DAY) {
+                        mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.DAY);
+                    }
+                    break;
+                case R.id.week_menu_item:
+                    if (mCurrentView != ViewType.WEEK) {
+                        mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.WEEK);
+                    }
+                    break;
+                case R.id.month_menu_item:
+                    if (mCurrentView != ViewType.MONTH) {
+                        mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.MONTH);
+                    }
+                    break;
+                case R.id.agenda_menu_item:
+                    if (mCurrentView != ViewType.AGENDA) {
+                        mController.sendEvent(this, EventType.GO_TO, null, null, -1, ViewType.AGENDA);
+                    }
+                    break;
+                case R.id.action_select_visible_calendars:
+                    mController.sendEvent(this, EventType.LAUNCH_SELECT_VISIBLE_CALENDARS, null, null,
+                            0, 0);
+                    break;
+                case R.id.action_settings:
+                    mController.sendEvent(this, EventType.LAUNCH_SETTINGS, null, null, 0, 0);
+                    break;
+            }
+            mDrawerLayout.closeDrawers();
+            item.setChecked(true);
         }
-        mDrawerLayout.closeDrawers();
-        item.setChecked(true);
         return false;
     }
 
@@ -1275,7 +1295,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         return true;
     }
 
-//    @Override
+    //    @Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         switch (itemPosition) {
             case CalendarViewAdapter.DAY_BUTTON_INDEX:
@@ -1325,6 +1345,73 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
             mSearchMenu.expandActionView();
         }
         return false;
+    }
+
+    private boolean checkPermission() {
+        boolean isCheck = false;
+        // BEGIN_INCLUDE(calendar)
+        // Check if the Camera permission has been granted
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR)
+                == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                        == PackageManager.PERMISSION_GRANTED) {
+            // Permission is already available, start calendar
+            isCheck = true;
+
+        } else {
+            // Permission is missing and must be requested.
+            requestCalendarPermission();
+        }
+        // END_INCLUDE(startCamera)
+        return isCheck;
+    }
+
+    /**
+     * Requests the {@link android.Manifest.permission#READ_CALENDAR} permission.
+     * If an additional rationale should be displayed, the user has to launch the request from
+     * a SnackBar that includes additional information.
+     */
+    private void requestCalendarPermission() {
+        // Permission has not been granted and must be requested.
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CALENDAR)
+                && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_CALENDAR)) {
+            // Provide an additional rationale to the user if the permission was not granted
+            // and the user would benefit from additional context for the use of the permission.
+            // Display a SnackBar with a button to request the missing permission.
+            ActivityCompat.requestPermissions(AllInOneActivity.this,
+                    new String[]{Manifest.permission.READ_CALENDAR},
+                    PERMISSION_REQUEST_CALENDAR);
+            ActivityCompat.requestPermissions(AllInOneActivity.this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR},
+                    PERMISSION_REQUEST_CALENDAR);
+
+
+        } else {
+            // Request the permission. The result will be received in onRequestPermissionResult().
+            ActivityCompat.requestPermissions(AllInOneActivity.this,
+                    new String[]{Manifest.permission.READ_CALENDAR},
+                    PERMISSION_REQUEST_CALENDAR);
+            ActivityCompat.requestPermissions(AllInOneActivity.this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR},
+                    PERMISSION_REQUEST_CALENDAR);
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        // BEGIN_INCLUDE(onRequestPermissionsResult)
+        if (requestCode == PERMISSION_REQUEST_CALENDAR) {
+            // Request for camera permission.
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission has been granted. Start camera preview Activity.
+                initFragments(timeMillis, viewType, mIcicle);
+
+            } else {
+                // Permission request was denied.
+            }
+        }
+        // END_INCLUDE(onRequestPermissionsResult)
     }
 
     private class QueryHandler extends AsyncQueryHandler {
